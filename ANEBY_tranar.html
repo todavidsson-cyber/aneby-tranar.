@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANEBY TRÄNAR</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600&display=swap');
+
+  :root{
+    --bg: #0c1512;
+    --bg-panel: #121f1a;
+    --bg-panel-2: #16261f;
+    --line: #24352d;
+    --text: #e8ede9;
+    --text-dim: #8ea395;
+    --amber: #f5a623;
+    --amber-dim: rgba(245,166,35,0.15);
+    --moss: #6fae7c;
+    --moss-dim: rgba(111,174,124,0.15);
+    --red: #e0674f;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(111,174,124,0.08), transparent),
+      radial-gradient(ellipse 700px 400px at 100% 10%, rgba(245,166,35,0.06), transparent);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px 0;
+  }
+
+  /* Topographic contour lines - Aneby forest signature */
+  .contour-bg{
+    position: fixed; inset:0; z-index:0; pointer-events:none; opacity:0.35;
+  }
+
+  .wrap{ max-width: 880px; margin:0 auto; padding: 0 20px; position:relative; z-index:1; }
+
+  header{
+    padding: 40px 0 28px 0;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .eyebrow{
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:12px; font-weight:600; letter-spacing:3px;
+    color: var(--moss); text-transform:uppercase;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:''; width:16px; height:2px; background:var(--amber); display:inline-block; }
+  h1{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 9vw, 78px);
+    letter-spacing: 2px;
+    line-height: 0.95;
+    margin-top: 8px;
+    color: #fff;
+  }
+  h1 span{ color: var(--amber); }
+  .sub{
+    color: var(--text-dim);
+    font-size: 15px;
+    margin-top: 10px;
+    max-width: 480px;
+  }
+
+  /* Tabs */
+  .tabs{
+    display:flex; gap:4px; margin-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    overflow-x:auto;
+  }
+  .tab{
+    background:none; border:none; cursor:pointer;
+    font-family:'Barlow Condensed', sans-serif;
+    font-size: 16px; font-weight:600; letter-spacing:0.5px;
+    color: var(--text-dim);
+    padding: 12px 18px 14px 18px;
+    white-space:nowrap;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab:hover{ color: var(--text); }
+  .tab.active{ color: var(--amber); border-bottom-color: var(--amber); }
+
+  .panel{ display:none; animation: fadein 0.25s ease; }
+  .panel.active{ display:block; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 18px;
+  }
+  .card-title{
+    font-family:'Barlow Condensed', sans-serif;
+    font-size: 13px; font-weight:600; letter-spacing:2px;
+    text-transform:uppercase; color: var(--moss);
+    margin-bottom: 18px;
+  }
+
+  .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom:14px; }
+  .row.single{ grid-template-columns: 1fr; }
+  .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom:14px; }
+  @media (max-width:520px){ .row3{ grid-template-columns:1fr; } }
+
+  label{
+    display:block; font-size: 12px; color: var(--text-dim);
+    margin-bottom: 6px; font-weight:500;
+  }
+  input, select{
+    width:100%; background: var(--bg-panel-2); border: 1px solid var(--line);
+    color: var(--text); padding: 10px 12px; border-radius: 6px;
+    font-size: 15px; font-family:'Barlow', sans-serif;
+  }
+  input:focus, select:focus{ outline:none; border-color: var(--amber); }
+
+  .btn{
+    background: var(--amber); color: #17130a; border:none;
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700; font-size: 15px; letter-spacing:0.5px;
+    padding: 12px 22px; border-radius: 6px; cursor:pointer;
+    margin-top: 4px;
+  }
+  .btn:hover{ filter:brightness(1.08); }
+
+  /* Results */
+  .result-hero{
+    display:flex; align-items:baseline; gap:12px; margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+  .result-hero .num{
+    font-family:'Bebas Neue', sans-serif;
+    font-size: 56px; color: var(--amber); line-height:1;
+  }
+  .result-hero .label{ color: var(--text-dim); font-size:14px; }
+
+  table{ width:100%; border-collapse: collapse; }
+  th{
+    text-align:left; font-size:11px; letter-spacing:1px; text-transform:uppercase;
+    color: var(--text-dim); font-weight:600; padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  td{ padding: 12px 10px; border-bottom: 1px solid var(--line); font-size:15px; }
+  tr:last-child td{ border-bottom:none; }
+  td.zone-name{ color: var(--text-dim); font-size:13px; }
+  td.pace-val{ font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:17px; color:#fff; }
+  .pill{
+    display:inline-block; width:10px; height:10px; border-radius:50%;
+    margin-right: 8px;
+  }
+
+  .hint{ font-size:12.5px; color: var(--text-dim); margin-top:16px; line-height:1.5; }
+  .empty-note{ color: var(--text-dim); font-size:14px; padding: 30px 0; text-align:center; }
+
+  footer{
+    margin-top: 40px; padding-top: 20px; border-top:1px solid var(--line);
+    font-size: 12px; color: var(--text-dim); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+</style>
+</head>
+<body>
+
+<svg class="contour-bg" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+  <g fill="none" stroke="#6fae7c" stroke-width="1">
+    <path d="M -50 620 Q 150 560 300 610 T 650 590 T 900 640" opacity="0.5"/>
+    <path d="M -50 660 Q 180 600 350 650 T 700 630 T 900 680" opacity="0.4"/>
+    <path d="M -50 700 Q 200 650 400 690 T 750 670 T 900 715" opacity="0.3"/>
+    <path d="M -50 740 Q 220 700 430 730 T 780 715 T 900 755" opacity="0.2"/>
+  </g>
+  <g fill="none" stroke="#f5a623" stroke-width="1">
+    <path d="M -50 60 Q 200 20 400 55 T 850 35" opacity="0.15"/>
+    <path d="M -50 100 Q 220 60 420 95 T 850 75" opacity="0.1"/>
+  </g>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Digitalt processtöd &middot; Löpning</div>
+    <h1>ANEBY <span>TRÄNAR</span></h1>
+    <p class="sub">Pace, puls och racemål räknat på riktiga formler. Ingen inloggning, ingen molnlagring — allt sker i din webbläsare.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="pace">Löppace &amp; zoner</button>
+    <button class="tab" data-tab="hr">Pulszoner</button>
+    <button class="tab" data-tab="predict">Racepace-prognos</button>
+  </div>
+
+  <!-- PACE / VDOT PANEL -->
+  <div class="panel active" id="panel-pace">
+    <div class="card">
+      <div class="card-title">Utgångsresultat</div>
+      <div class="row3">
+        <div>
+          <label>Distans</label>
+          <select id="pace-dist">
+            <option value="1500">1500 m</option>
+            <option value="3000">3000 m</option>
+            <option value="5000" selected>5 km</option>
+            <option value="10000">10 km</option>
+            <option value="21097">Halvmaraton</option>
+            <option value="42195">Maraton</option>
+          </select>
+        </div>
+        <div>
+          <label>Tid (mm:ss eller hh:mm:ss)</label>
+          <input type="text" id="pace-time" placeholder="t.ex. 39:33" value="39:33">
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button class="btn" onclick="calcPace()">Räkna ut zoner</button>
+        </div>
+      </div>
+      <div class="hint">Baseras på Jack Daniels' VDOT-formel (löpekonomi + syreupptagningsmodell). Träningspaceren är ungefärliga uppskattningar av Daniels tabellvärden, inte exakta tabelluppslag.</div>
+    </div>
+
+    <div class="card" id="pace-results" style="display:none;">
+      <div class="card-title">Resultat</div>
+      <div class="result-hero">
+        <div class="num" id="vdot-num">–</div>
+        <div class="label">VDOT-värde</div>
+      </div>
+      <p class="hint" style="margin-top:-8px; margin-bottom:20px;">VDOT är ett kondition-tal beräknat från ditt löpresultat — inte din verkliga syreupptagning, utan en motsvarighet. Ett högre tal betyder bättre löpkondition, och talet används för att räkna ut rätt pace i alla zoner nedan i rätt inbördes förhållande till varandra.</p>
+      <table>
+        <thead><tr><th>Zon</th><th>Syfte</th><th>Pace /km</th></tr></thead>
+        <tbody id="pace-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- HR PANEL -->
+  <div class="panel" id="panel-hr">
+    <div class="card">
+      <div class="card-title">Pulsdata (Karvonen-metoden)</div>
+      <div class="row">
+        <div>
+          <label>Vilopuls (slag/min)</label>
+          <input type="number" id="hr-rest" placeholder="t.ex. 48" value="48">
+        </div>
+        <div>
+          <label>Maxpuls (slag/min)</label>
+          <input type="number" id="hr-max" placeholder="t.ex. 186" value="186">
+        </div>
+      </div>
+      <div class="hint" style="margin-top:0; margin-bottom:14px;">Vet du inte din maxpuls? Grov uppskattning: 211 − (0,64 × ålder). Ett faktiskt testat värde ger alltid säkrare zoner.</div>
+      <button class="btn" onclick="calcHR()">Räkna ut pulszoner</button>
+    </div>
+
+    <div class="card" id="hr-results" style="display:none;">
+      <div class="card-title">Pulszoner</div>
+      <table>
+        <thead><tr><th>Zon</th><th>Intensitet</th><th>Puls (slag/min)</th></tr></thead>
+        <tbody id="hr-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PREDICT PANEL -->
+  <div class="panel" id="panel-predict">
+    <div class="card">
+      <div class="card-title">Känt resultat</div>
+      <div class="row3">
+        <div>
+          <label>Distans</label>
+          <select id="pred-dist1">
+            <option value="5000">5 km</option>
+            <option value="10000" selected>10 km</option>
+            <option value="15000">15 km</option>
+            <option value="21097">Halvmaraton</option>
+            <option value="42195">Maraton</option>
+          </select>
+        </div>
+        <div>
+          <label>Tid (mm:ss eller hh:mm:ss)</label>
+          <input type="text" id="pred-time1" placeholder="t.ex. 39:33" value="39:33">
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button class="btn" onclick="calcPredict()">Räkna prognos</button>
+        </div>
+      </div>
+      <div class="hint">Riegels formel: T2 = T1 × (D2/D1)^1.06. Fungerar bäst för jämförbara distanser med liknande träningsbakgrund — extrapolering till maraton är alltid osäkrare än till en närliggande distans.</div>
+    </div>
+
+    <div class="card" id="predict-results" style="display:none;">
+      <div class="card-title">Prognos för andra distanser</div>
+      <table>
+        <thead><tr><th>Distans</th><th>Tid</th><th>Pace /km</th></tr></thead>
+        <tbody id="predict-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <span>ANEBY TRÄNAR — byggt av Tomas Davidsson, körs i din webbläsare</span>
+    <span>v1.0</span>
+  </footer>
+</div>
+
+<script>
+// ---------- Tabs ----------
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ---------- Time parsing helpers ----------
+function parseTimeToSeconds(str){
+  const parts = str.trim().split(':').map(p=>parseFloat(p));
+  if(parts.some(isNaN)) return null;
+  if(parts.length === 2) return parts[0]*60 + parts[1];
+  if(parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  return null;
+}
+function secondsToTime(sec){
+  sec = Math.round(sec);
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  const s = Math.round(sec%60);
+  if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function paceFromSecondsPerKm(secPerKm){
+  const m = Math.floor(secPerKm/60);
+  const s = Math.round(secPerKm%60);
+  return `${m}:${String(s).padStart(2,'0')}/km`;
+}
+
+// ---------- VDOT (Jack Daniels) ----------
+// VO2 cost of running at velocity v (m/min)
+function vo2(v){ return -4.60 + 0.182258*v + 0.000104*v*v; }
+// %VO2max sustainable for duration t (minutes)
+function pctVO2max(t){ return 0.8 + 0.1894393*Math.exp(-0.012778*t) + 0.2989558*Math.exp(-0.1932605*t); }
+
+function vdotFromRace(distanceM, timeSec){
+  const timeMin = timeSec/60;
+  const v = distanceM/timeMin; // m/min
+  const VO2 = vo2(v);
+  const pct = pctVO2max(timeMin);
+  return VO2/pct;
+}
+// Inverse: velocity (m/min) that costs vo2Target at %VO2max effort, solved via VO2 formula
+function velocityForVO2(vo2Target){
+  // vo2Target = -4.60 + 0.182258*v + 0.000104*v^2  -> solve quadratic for v
+  const a = 0.000104, b = 0.182258, c = -4.60 - vo2Target;
+  const disc = b*b - 4*a*c;
+  return (-b + Math.sqrt(disc)) / (2*a);
+}
+function paceSecPerKmFromVelocity(vMinPerM){
+  // v in m/min -> sec/km
+  return 60000 / vMinPerM;
+}
+
+function calcPace(){
+  const dist = parseFloat(document.getElementById('pace-dist').value);
+  const timeSec = parseTimeToSeconds(document.getElementById('pace-time').value);
+  if(!timeSec){ alert('Ange tid i format mm:ss eller hh:mm:ss'); return; }
+
+  const VDOT = vdotFromRace(dist, timeSec);
+  document.getElementById('vdot-num').textContent = VDOT.toFixed(1);
+
+  // Training zones as %VO2max, per Daniels' approximate ranges
+  const zones = [
+    {name:'Easy (E)', pctRange:[0.59,0.74], purpose:'Grundträning, återhämtning, lång distans'},
+    {name:'Marathon (M)', pct:0.80, purpose:'Maratonspecifikt tempo'},
+    {name:'Threshold (T)', pct:0.88, purpose:'Tröskelpass, komfortabelt hårt'},
+    {name:'Interval (I)', pct:0.975, purpose:'VO2max-intervaller, 3–5 min arbete'},
+    {name:'Repetition (R)', pct:1.10, purpose:'Snabbhet/löpekonomi, korta reps'}
+  ];
+
+  let rows = '';
+  zones.forEach(z=>{
+    if(z.pctRange){
+      // Range zone (Easy): show slow end – fast end
+      const vSlow = velocityForVO2(VDOT * z.pctRange[0]);
+      const vFast = velocityForVO2(VDOT * z.pctRange[1]);
+      const secSlow = paceSecPerKmFromVelocity(vSlow);
+      const secFast = paceSecPerKmFromVelocity(vFast);
+      rows += `<tr>
+        <td class="zone-name">${z.name}</td>
+        <td class="zone-name">${z.purpose}</td>
+        <td class="pace-val">${paceFromSecondsPerKm(secFast).replace('/km','')}–${paceFromSecondsPerKm(secSlow)}</td>
+      </tr>`;
+    } else {
+      const vo2Target = VDOT * z.pct;
+      const v = velocityForVO2(vo2Target);
+      const secPerKm = paceSecPerKmFromVelocity(v);
+      rows += `<tr>
+        <td class="zone-name">${z.name}</td>
+        <td class="zone-name">${z.purpose}</td>
+        <td class="pace-val">${paceFromSecondsPerKm(secPerKm)}</td>
+      </tr>`;
+    }
+  });
+  document.getElementById('pace-table').innerHTML = rows;
+  document.getElementById('pace-results').style.display = 'block';
+}
+function distFromVDOT(v){ return v; } // placeholder, unused safeguard
+
+// ---------- Karvonen HR zones ----------
+function calcHR(){
+  const rest = parseFloat(document.getElementById('hr-rest').value);
+  const max = parseFloat(document.getElementById('hr-max').value);
+  if(isNaN(rest) || isNaN(max) || max<=rest){ alert('Kontrollera vilopuls och maxpuls'); return; }
+
+  const reserve = max - rest;
+  const zones = [
+    {name:'Zon 1', pct:[0.50,0.60], desc:'Mycket lätt, återhämtning', color:'#6fae7c'},
+    {name:'Zon 2', pct:[0.60,0.70], desc:'Lätt, grundkondition', color:'#8bc98f'},
+    {name:'Zon 3', pct:[0.70,0.80], desc:'Måttlig, tempo', color:'#f5a623'},
+    {name:'Zon 4', pct:[0.80,0.90], desc:'Hård, tröskel', color:'#e58a2a'},
+    {name:'Zon 5', pct:[0.90,1.00], desc:'Maximal, anaerob', color:'#e0674f'}
+  ];
+
+  let rows = '';
+  zones.forEach(z=>{
+    const low = Math.round(reserve*z.pct[0] + rest);
+    const high = Math.round(reserve*z.pct[1] + rest);
+    rows += `<tr>
+      <td class="zone-name"><span class="pill" style="background:${z.color}"></span>${z.name}</td>
+      <td class="zone-name">${z.desc}</td>
+      <td class="pace-val">${low}–${high}</td>
+    </tr>`;
+  });
+  document.getElementById('hr-table').innerHTML = rows;
+  document.getElementById('hr-results').style.display = 'block';
+}
+
+// ---------- Riegel race predictor ----------
+function calcPredict(){
+  const d1 = parseFloat(document.getElementById('pred-dist1').value);
+  const t1 = parseTimeToSeconds(document.getElementById('pred-time1').value);
+  if(!t1){ alert('Ange tid i format mm:ss eller hh:mm:ss'); return; }
+
+  const targets = [
+    {name:'5 km', d:5000},
+    {name:'10 km', d:10000},
+    {name:'15 km', d:15000},
+    {name:'Halvmaraton', d:21097},
+    {name:'Maraton', d:42195}
+  ];
+
+  let rows = '';
+  targets.forEach(t=>{
+    const t2 = t1 * Math.pow(t.d/d1, 1.06);
+    const secPerKm = t2 / (t.d/1000);
+    const same = Math.abs(t.d - d1) < 1;
+    rows += `<tr style="${same ? 'opacity:0.5' : ''}">
+      <td class="zone-name">${t.name}${same ? ' (angiven)' : ''}</td>
+      <td class="pace-val">${secondsToTime(t2)}</td>
+      <td class="zone-name">${paceFromSecondsPerKm(secPerKm)}</td>
+    </tr>`;
+  });
+  document.getElementById('predict-table').innerHTML = rows;
+  document.getElementById('predict-results').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
